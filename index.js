@@ -199,7 +199,7 @@ function find_colliding(object, objects) {
     for(var i = 0; i < objects.length; i++) {
         var distx = Math.abs(object.x - objects[i].x);
         var disty = Math.abs(object.y - objects[i].y);
-        if(distx <= Math.max(object.img.width / 2, objects[i].img.width / 2) && 
+        if(distx <= Math.max(object.img.width / 2, objects[i].img.width / 2) &&
             disty <= Math.max(object.img.height / 2, objects[i].img.height / 2)) {
             return i;
         }
@@ -239,6 +239,11 @@ function game_loop()
 
 	requestAnimationFrame(game_loop);
 }
+
+window.onblur = function(){
+    // prevent key bug when we lose
+    keys = [];
+};
 
 game_loop();
 })();
