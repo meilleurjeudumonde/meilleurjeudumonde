@@ -2,6 +2,7 @@
 
 var BULLET_SPEED = 10;
 var USER_SPEED = 8;
+var MIN_SHOOT_DELAY = 180;// ms
 var SCREEN_WIDTH = 1200;
 var SCREEN_HEIGHT = 600;
 var SPRITES = {
@@ -21,11 +22,20 @@ function create_image(src) {
 function play_sound(src) {
     var sound = new Audio(src);
     sound.play();
+    return sound;
+}
+function play_looping_sound(src) {
+    var sound = play_sound(src);
+    sound.addEventListener('ended', function() {
+        this.currentTime = 0;
+        this.play();
+    }, false);
+    return sound;
 }
 
 var canvas = document.getElementById('SHMUP');
 var ctx = canvas.getContext('2d');
-play_sound(SOUNDS.music);
+play_looping_sound(SOUNDS.music);
 
 var background = {
     x: 0,
@@ -63,8 +73,7 @@ var user = {
     last_bullet_shot_at: null,
     shoot: function() {
         var current_time = new Date();
-        var min_shoot_delay = 180;// ms
-        if(this.last_bullet_shot_at && current_time - this.last_bullet_shot_at < min_shoot_delay) {
+        if(this.last_bullet_shot_at && current_time - this.last_bullet_shot_at < MIN_SHOOT_DELAY) {
             return;
         }
         this.last_bullet_shot_at = current_time;
@@ -73,7 +82,7 @@ var user = {
 			y: user.y,
 			dx: BULLET_SPEED,
 			dy: 0,
-            img: create_image(SPRITES.bullet),
+            img: bullet_image,
             update: function() {
                 this.x += this.dx;
                 this.y += this.dy;
@@ -81,7 +90,10 @@ var user = {
 		});
     }
 };
-bullets = [];
+
+// Bullets
+var bullets = [];
+var bullet_image = create_image(SPRITES.bullet);
 
 function draw_object(obj) {
 	ctx.drawImage(obj.img, obj.x - obj.img.width / 2, obj.y - obj.img.height / 2);
