@@ -12,7 +12,7 @@ function create_image(src) {
 canvas = document.getElementById('SHMUP');
 ctx = canvas.getContext('2d');
 user = {
-    img: create_image('ship.png'),
+    img: create_image('img/ship.png'),
     x: 400,
     y: 500,
     speed: USER_SPEED,
@@ -36,7 +36,7 @@ user = {
 			y: user.y,
 			dx: BULLET_SPEED,
 			dy: 0,
-            img: create_image('bullet.png'),
+            img: create_image('img/bullet.png'),
             update: function() {
                 this.x += this.dx;
                 this.y += this.dy;
