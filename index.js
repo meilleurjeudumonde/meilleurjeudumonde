@@ -16,7 +16,7 @@ var SOUNDS = {
 };
 var OUT_OF_GAME_MARGIN = 200;
 
-var ENEMY_SPAWN_PROBABILITY_PER_SECOND = 0.2;
+var ENEMY_SPAWN_PROBABILITY_PER_SECOND = 0.8;
 var ENEMY_SPEED = 4;
 
 function create_image(src) {
@@ -49,6 +49,59 @@ function draw_background() {
 }
 
 // Create visible objects
+var VisibleObject = function(x, y, dx, dy, img) {
+    this.init = function(x, y, dx, dy, img) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+
+        this.img = img;
+    };
+
+    this.move = function() {
+        this.x += this.dx;
+        this.y += this.dy;
+    };
+
+    this.update = function(){};
+
+    this.draw = function() {
+	    ctx.drawImage(this.img, this.x - this.img.width / 2, this.y - this.img.height / 2);
+    };
+};
+var User = function() {
+    this.init(400, 500, 0, 0, create_image(SPRITES.ship));
+
+    this.last_bullet_shot_at = null;
+    this.shoot = function() {
+        var current_time = new Date();
+        if(this.last_bullet_shot_at && current_time - this.last_bullet_shot_at < MIN_SHOOT_DELAY) {
+            return;
+        }
+        this.last_bullet_shot_at = current_time;
+		bullets.push(new Bullet(user.x + user.img.width / 8 * 3, user.y));
+    };
+
+    this.update = function() {
+        // Stay inside screen
+        this.x = Math.min(Math.max(this.x, this.img.width / 4), canvas.width - this.img.width / 4);
+        this.y = Math.min(Math.max(this.y, this.img.height / 4), canvas.height - this.img.height / 4);
+    };
+};
+
+// User
+User.prototype = new VisibleObject();
+var user = new User();
+
+// Bullets
+var Bullet = function(x, y) {
+    this.init(x, y, BULLET_SPEED, 0, bullet_image);
+};
+Bullet.prototype = new VisibleObject();
+var bullets = [];
+var bullet_image = create_image(SPRITES.bullet);
+
 var background = {
     x: 0,
     y: 0,
@@ -65,37 +118,11 @@ var background = {
         }
     },
 };
-var user = {
-    img: create_image(SPRITES.ship),
-    x: 400,
-    y: 500,
-    update: function() {
-		this.x += this.dx;
-		this.y += this.dy;
-        // Stay inside screen
-        user.x = Math.min(Math.max(user.x, user.img.width / 2), canvas.width - user.img.width / 2);
-        user.y = Math.min(Math.max(user.y, user.img.height / 2), canvas.height - user.img.height / 2);
-    },
-    last_bullet_shot_at: null,
-    shoot: function() {
-        var current_time = new Date();
-        if(this.last_bullet_shot_at && current_time - this.last_bullet_shot_at < MIN_SHOOT_DELAY) {
-            return;
-        }
-        this.last_bullet_shot_at = current_time;
-		bullets.push({
-			x: user.x + user.img.width / 8 * 3,
-			y: user.y,
-			dx: BULLET_SPEED,
-			dy: 0,
-            img: bullet_image,
-            update: function() {
-                this.x += this.dx;
-                this.y += this.dy;
-            }
-		});
-    }
-};
+
+
+// Enemies
+var enemies = [];
+var enemy_image = create_image(SPRITES.enemy);
 
 var last_enemy_spawn_check = new Date();
 function should_spawn_enemy() {
@@ -109,45 +136,32 @@ function should_spawn_enemy() {
 function create_enemy() {
     var x = SCREEN_WIDTH + 20;
     var y = Math.random() * SCREEN_HEIGHT;
-
-    return {
-        x: x,
-        y: y,
-        dx: -ENEMY_SPEED,
-        dy: 0,
-        img: enemy_image,
-        update: function() {
-            this.x += this.dx;
-            this.y += this.dy;
-        }
-    };
+    return new Enemy(x, y);
 }
+var Enemy = function(x, y) {
+    this.init(x, y, -ENEMY_SPEED, 0, enemy_image);
+};
+Enemy.prototype = new VisibleObject();
 
-// Bullets
-var bullets = [];
-var bullet_image = create_image(SPRITES.bullet);
 
-// Enemies
-var enemies = [];
-var enemy_image = create_image(SPRITES.enemy);
-
-// Draw functions
-function draw_objects(objects) {
+// Process series of objects functions
+function move_objects(objects) {
     for(var i = 0; i < objects.length; i++) {
-		draw_object(objects[i]);
-	}
+        objects[i].move();
+    }
 }
-function draw_object(obj) {
-	ctx.drawImage(obj.img, obj.x - obj.img.width / 2, obj.y - obj.img.height / 2);
-}
-
-// Update functions
 function update_objects(objects) {
     for(var i = 0; i < objects.length; i++) {
         objects[i].update();
     }
 }
+function draw_objects(objects) {
+    for(var i = 0; i < objects.length; i++) {
+		objects[i].draw();
+	}
+}
 
+// Manage user input
 var keys = [];
 function keydown(event) { keys[event.keyCode] = true; }
 function keyup(event) { keys[event.keyCode] = false; }
@@ -215,11 +229,16 @@ function game_loop()
 	// background
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Move
+    user.move();
+    move_objects(bullets);
+    move_objects(enemies);
+
     // update state
     background.update();
+    user.update();
     update_objects(bullets);
     update_objects(enemies);
-    user.update();
 
     if(should_spawn_enemy()) {
         enemies.push(create_enemy());
@@ -235,7 +254,7 @@ function game_loop()
 	draw_background();
     draw_objects(bullets);
     draw_objects(enemies);
-	draw_object(user);
+	user.draw();
 
 	requestAnimationFrame(game_loop);
 }
