@@ -13,6 +13,7 @@ var SPRITES = {
 var SOUNDS = {
     music: "sound/music.mp3",
 };
+var OUT_OF_GAME_MARGIN = 200;
 
 function create_image(src) {
     var img = new Image();
@@ -134,6 +135,19 @@ function game_loop()
         bullets[b].update();
     }
     user.update();
+
+    // remove objects out of screen
+    for(b = bullets.length - 1; b >= 0; b--) {
+        var x = bullets[b].x;
+        var y = bullets[b].y;
+
+        if(x < -OUT_OF_GAME_MARGIN ||
+            x > SCREEN_WIDTH + OUT_OF_GAME_MARGIN ||
+            y < -OUT_OF_GAME_MARGIN ||
+            y > SCREEN_HEIGHT + OUT_OF_GAME_MARGIN) {
+            bullets.splice(b, 1);
+        }
+    }
 
 	// draw objects
 	draw_background();
