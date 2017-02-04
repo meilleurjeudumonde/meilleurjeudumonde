@@ -1,5 +1,6 @@
 (function(){
 
+var BACKGROUND_SCROLL_SPEED = 6;
 var BULLET_SPEED = 10;
 var USER_SPEED = 8;
 var MIN_SHOOT_DELAY = 180;// ms
@@ -104,7 +105,7 @@ var bullet_image = create_image(SPRITES.bullet);
 
 // Background
 var Background = function() {
-    this.init(0, 0, -5, 0, create_image(SPRITES.background));
+    this.init(0, 0, -BACKGROUND_SCROLL_SPEED, 0, create_image(SPRITES.background));
 
     this.update = function() {
 		this.x += this.dx;
@@ -112,6 +113,11 @@ var Background = function() {
         if(this.x < -this.img.width) {
             this.x += this.img.width;
         }
+    };
+
+    this.draw = function() {
+	    ctx.drawImage(this.img, this.x, 0);
+        ctx.drawImage(this.img, this.x + this.img.width - 1, 0);
     };
 };
 Background.prototype = new VisibleObject();
@@ -228,12 +234,13 @@ function game_loop()
 
     // Move
     user.move();
+    background.move();
     move_objects(bullets);
     move_objects(enemies);
 
     // update state
-    background.update();
     user.update();
+    background.update();
     update_objects(bullets);
     update_objects(enemies);
 
@@ -248,7 +255,7 @@ function game_loop()
     remove_objects_out_of_screen(enemies);
 
 	// draw objects
-	draw_background();
+	background.draw();
     draw_objects(bullets);
     draw_objects(enemies);
 	user.draw();
