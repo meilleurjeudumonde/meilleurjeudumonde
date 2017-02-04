@@ -70,6 +70,8 @@ var VisibleObject = function(x, y, dx, dy, img) {
 	    ctx.drawImage(this.img, this.x - this.img.width / 2, this.y - this.img.height / 2);
     };
 };
+
+// User
 var User = function() {
     this.init(400, 500, 0, 0, create_image(SPRITES.ship));
 
@@ -89,8 +91,6 @@ var User = function() {
         this.y = Math.min(Math.max(this.y, this.img.height / 4), canvas.height - this.img.height / 4);
     };
 };
-
-// User
 User.prototype = new VisibleObject();
 var user = new User();
 
@@ -102,23 +102,20 @@ Bullet.prototype = new VisibleObject();
 var bullets = [];
 var bullet_image = create_image(SPRITES.bullet);
 
-var background = {
-    x: 0,
-    y: 0,
-    dx: -5,
-    dy: 0,
-    width: canvas.width,
-    height: canvas.height,
-    img: create_image(SPRITES.background),
-    update: function() {
+// Background
+var Background = function() {
+    this.init(0, 0, -5, 0, create_image(SPRITES.background));
+
+    this.update = function() {
 		this.x += this.dx;
 		this.y += this.dy;
         if(this.x < -this.img.width) {
             this.x += this.img.width;
         }
-    },
+    };
 };
-
+Background.prototype = new VisibleObject();
+var background = new Background();
 
 // Enemies
 var enemies = [];
