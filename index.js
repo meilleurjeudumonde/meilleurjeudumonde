@@ -55,7 +55,7 @@ var background = {
 };
 function draw_background() {
 	ctx.drawImage(background.img, background.x, 0);
-	ctx.drawImage(background.img, background.x + background.img.width, 0);
+	ctx.drawImage(background.img, background.x + background.img.width - 1, 0);
 }
 
 var user = {
@@ -127,7 +127,7 @@ function game_loop()
 
 	// background
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	
+
     // update state
     background.update();
     for(var b = 0; b < bullets.length; b++) {
@@ -141,7 +141,7 @@ function game_loop()
 		draw_object(bullets[b]);
 	}
 	draw_object(user);
-	
+
 	requestAnimationFrame(game_loop);
 }
 
