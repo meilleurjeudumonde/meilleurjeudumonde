@@ -9,11 +9,15 @@ var SPRITES = {
     ship: "img/ship.png",
     bullet: "img/bullet.png",
     background: "img/background.png",
+    enemy: "img/enemy4.png",
 };
 var SOUNDS = {
     music: "sound/music.mp3",
 };
 var OUT_OF_GAME_MARGIN = 200;
+
+var ENEMY_SPAWN_PROBABILITY_PER_SECOND = 0.2;
+var ENEMY_SPEED = 4;
 
 function create_image(src) {
     var img = new Image();
@@ -34,10 +38,17 @@ function play_looping_sound(src) {
     return sound;
 }
 
+// Create game
 var canvas = document.getElementById('SHMUP');
 var ctx = canvas.getContext('2d');
 play_looping_sound(SOUNDS.music);
 
+function draw_background() {
+	ctx.drawImage(background.img, background.x, 0);
+	ctx.drawImage(background.img, background.x + background.img.width - 1, 0);
+}
+
+// Create visible objects
 var background = {
     x: 0,
     y: 0,
@@ -54,11 +65,6 @@ var background = {
         }
     },
 };
-function draw_background() {
-	ctx.drawImage(background.img, background.x, 0);
-	ctx.drawImage(background.img, background.x + background.img.width - 1, 0);
-}
-
 var user = {
     img: create_image(SPRITES.ship),
     x: 400,
@@ -91,12 +97,55 @@ var user = {
     }
 };
 
+var last_enemy_spawn_check = new Date();
+function should_spawn_enemy() {
+    current_time = new Date();
+
+    var result = Math.random() < (current_time - last_enemy_spawn_check) / 1000 * ENEMY_SPAWN_PROBABILITY_PER_SECOND;
+    last_enemy_spawn_check = current_time;
+
+    return result;
+}
+function create_enemy() {
+    var x = SCREEN_WIDTH + 20;
+    var y = Math.random() * SCREEN_HEIGHT;
+
+    return {
+        x: x,
+        y: y,
+        dx: -ENEMY_SPEED,
+        dy: 0,
+        img: enemy_image,
+        update: function() {
+            this.x += this.dx;
+            this.y += this.dy;
+        }
+    };
+}
+
 // Bullets
 var bullets = [];
 var bullet_image = create_image(SPRITES.bullet);
 
+// Enemies
+var enemies = [];
+var enemy_image = create_image(SPRITES.enemy);
+
+// Draw functions
+function draw_objects(objects) {
+    for(var i = 0; i < objects.length; i++) {
+		draw_object(objects[i]);
+	}
+}
 function draw_object(obj) {
 	ctx.drawImage(obj.img, obj.x - obj.img.width / 2, obj.y - obj.img.height / 2);
+}
+
+// Update functions
+function update_objects(objects) {
+    for(var i = 0; i < objects.length; i++) {
+        objects[i].update();
+    }
 }
 
 var keys = [];
@@ -120,6 +169,44 @@ function get_player_input() {
 		user.dy = USER_SPEED;
 }
 
+function remove_objects_out_of_screen(objects) {
+    for(b = objects.length - 1; b >= 0; b--) {
+        var x = objects[b].x;
+        var y = [b].y;
+
+        if(x < -OUT_OF_GAME_MARGIN ||
+            x > SCREEN_WIDTH + OUT_OF_GAME_MARGIN ||
+            y < -OUT_OF_GAME_MARGIN ||
+            y > SCREEN_HEIGHT + OUT_OF_GAME_MARGIN) {
+            objects.splice(b, 1);
+        }
+    }
+
+}
+
+function collide(objects1, objects2) {
+    for(var i1 = objects1.length - 1; i1 >= 0; i1--) {
+        var i2 = find_colliding(objects1[i1], objects2);
+        if(i2 >= 0) {
+            objects1.splice(i1, 1);
+            objects2.splice(i2, 1);
+            // TODO call destroy
+        }
+    }
+}
+
+function find_colliding(object, objects) {
+    for(var i = 0; i < objects.length; i++) {
+        var distx = Math.abs(object.x - objects[i].x);
+        var disty = Math.abs(object.y - objects[i].y);
+        if(distx <= Math.max(object.img.width / 2, objects[i].img.width / 2) && 
+            disty <= Math.max(object.img.height / 2, objects[i].img.height / 2)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 function game_loop()
 {
 	// input
@@ -130,29 +217,24 @@ function game_loop()
 
     // update state
     background.update();
-    for(var b = 0; b < bullets.length; b++) {
-        bullets[b].update();
-    }
+    update_objects(bullets);
+    update_objects(enemies);
     user.update();
 
-    // remove objects out of screen
-    for(b = bullets.length - 1; b >= 0; b--) {
-        var x = bullets[b].x;
-        var y = bullets[b].y;
-
-        if(x < -OUT_OF_GAME_MARGIN ||
-            x > SCREEN_WIDTH + OUT_OF_GAME_MARGIN ||
-            y < -OUT_OF_GAME_MARGIN ||
-            y > SCREEN_HEIGHT + OUT_OF_GAME_MARGIN) {
-            bullets.splice(b, 1);
-        }
+    if(should_spawn_enemy()) {
+        enemies.push(create_enemy());
     }
+
+    collide(bullets, enemies);
+
+    // remove objects out of screen
+    remove_objects_out_of_screen(bullets);
+    remove_objects_out_of_screen(enemies);
 
 	// draw objects
 	draw_background();
-    for(b = 0; b < bullets.length; b++) {
-		draw_object(bullets[b]);
-	}
+    draw_objects(bullets);
+    draw_objects(enemies);
 	draw_object(user);
 
 	requestAnimationFrame(game_loop);
