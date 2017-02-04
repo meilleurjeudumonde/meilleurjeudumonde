@@ -63,13 +63,13 @@ var user = {
     last_bullet_shot_at: null,
     shoot: function() {
         var current_time = new Date();
-        var min_shoot_delay = 400;// ms
+        var min_shoot_delay = 180;// ms
         if(this.last_bullet_shot_at && current_time - this.last_bullet_shot_at < min_shoot_delay) {
             return;
         }
         this.last_bullet_shot_at = current_time;
 		bullets.push({
-			x: user.x,
+			x: user.x + user.img.width / 8 * 3,
 			y: user.y,
 			dx: BULLET_SPEED,
 			dy: 0,
