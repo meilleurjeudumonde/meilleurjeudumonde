@@ -1,0 +1,10 @@
+.Aligner {
+  display: flex;
+  display: -webkit-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Aligner-item--fixed {
+    flex: none;
+}
