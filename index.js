@@ -111,13 +111,13 @@ function get_player_input() {
 	}
     user.dx = 0;
     user.dy = 0;
-	if (keys[37])
+	if (keys[37] || keys[81])
 		user.dx = -user.speed;
-	if (keys[39])
+	if (keys[39] || keys[68])
 		user.dx = user.speed;
-	if (keys[38])
+	if (keys[38] || keys[90])
 		user.dy = -user.speed;
-	if (keys[40])
+	if (keys[40] || keys[83])
 		user.dy = user.speed;
 }
 
