@@ -2,6 +2,13 @@
 
 var BULLET_SPEED = 10;
 var USER_SPEED = 8;
+var SCREEN_WIDTH = 1200;
+var SCREEN_HEIGHT = 600;
+var SPRITES = {
+    ship: "img/ship.png",
+    bullet: "img/bullet.png",
+    background: "img/background.png",
+};
 
 function create_image(src) {
     var img = new Image();
@@ -9,10 +16,17 @@ function create_image(src) {
     return img;
 }
 
-canvas = document.getElementById('SHMUP');
-ctx = canvas.getContext('2d');
-user = {
-    img: create_image('img/ship.png'),
+var canvas = document.getElementById('SHMUP');
+var ctx = canvas.getContext('2d');
+var background = {
+    x: 0,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height,
+    img: create_image(SPRITES.background),
+};
+var user = {
+    img: create_image(SPRITES.ship),
     x: 400,
     y: 500,
     speed: USER_SPEED,
@@ -36,7 +50,7 @@ user = {
 			y: user.y,
 			dx: BULLET_SPEED,
 			dy: 0,
-            img: create_image('img/bullet.png'),
+            img: create_image(SPRITES.bullet),
             update: function() {
                 this.x += this.dx;
                 this.y += this.dy;
@@ -86,6 +100,7 @@ function game_loop()
     user.update();
 
 	// draw objects
+	ctx.drawImage(background.img, 0, 0);
     for(b = 0; b < bullets.length; b++) {
 		draw_object(bullets[b]);
 	}
