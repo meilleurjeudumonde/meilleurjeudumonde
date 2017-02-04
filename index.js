@@ -63,7 +63,6 @@ var user = {
     img: create_image(SPRITES.ship),
     x: 400,
     y: 500,
-    speed: USER_SPEED,
     update: function() {
 		this.x += this.dx;
 		this.y += this.dy;
@@ -112,13 +111,13 @@ function get_player_input() {
     user.dx = 0;
     user.dy = 0;
 	if (keys[37] || keys[81])
-		user.dx = -user.speed;
+		user.dx = -USER_SPEED;
 	if (keys[39] || keys[68])
-		user.dx = user.speed;
+		user.dx = USER_SPEED;
 	if (keys[38] || keys[90])
-		user.dy = -user.speed;
+		user.dy = -USER_SPEED;
 	if (keys[40] || keys[83])
-		user.dy = user.speed;
+		user.dy = USER_SPEED;
 }
 
 function game_loop()
