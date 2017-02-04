@@ -21,10 +21,24 @@ var ctx = canvas.getContext('2d');
 var background = {
     x: 0,
     y: 0,
+    dx: -5,
+    dy: 0,
     width: canvas.width,
     height: canvas.height,
     img: create_image(SPRITES.background),
+    update: function() {
+		this.x += this.dx;
+		this.y += this.dy;
+        if(this.x < -this.img.width) {
+            this.x += this.img.width;
+        }
+    },
 };
+function draw_background() {
+	ctx.drawImage(background.img, background.x, 0);
+	ctx.drawImage(background.img, background.x + background.img.width, 0);
+}
+
 var user = {
     img: create_image(SPRITES.ship),
     x: 400,
@@ -94,13 +108,14 @@ function game_loop()
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	
     // update state
+    background.update();
     for(var b = 0; b < bullets.length; b++) {
         bullets[b].update();
     }
     user.update();
 
 	// draw objects
-	ctx.drawImage(background.img, 0, 0);
+	draw_background();
     for(b = 0; b < bullets.length; b++) {
 		draw_object(bullets[b]);
 	}
