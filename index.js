@@ -9,15 +9,24 @@ var SPRITES = {
     bullet: "img/bullet.png",
     background: "img/background.png",
 };
+var SOUNDS = {
+    music: "sound/music.mp3",
+};
 
 function create_image(src) {
     var img = new Image();
     img.src = src;
     return img;
 }
+function play_sound(src) {
+    var sound = new Audio(src);
+    sound.play();
+}
 
 var canvas = document.getElementById('SHMUP');
 var ctx = canvas.getContext('2d');
+play_sound(SOUNDS.music);
+
 var background = {
     x: 0,
     y: 0,
